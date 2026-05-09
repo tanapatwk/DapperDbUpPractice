@@ -1,5 +1,6 @@
 ﻿using System.Reflection;
 using DbUp;
+using TaskManager.Helpers;
 using TaskManager.Models;
 using TaskManager.Repositories;
 
@@ -17,14 +18,14 @@ var result = upgrader.PerformUpgrade();
 if (!result.Successful)
 {
     Console.ForegroundColor = ConsoleColor.Red;
-    Console.WriteLine($"Migration ล้มเหลว {result.Error}");
+    Console.WriteLine($"{Emoji.Failed} Migration ล้มเหลว {result.Error}");
     Console.ResetColor();
     return;
 }
 else
 {
     Console.ForegroundColor = ConsoleColor.Green;
-    Console.WriteLine("Success!");
+    Console.WriteLine($"{Emoji.Success} Success!");
     Console.ResetColor();
 }
 
@@ -35,7 +36,7 @@ task.AddCategory("Work");
 task.AddCategory("Study");
 task.AddCategory("Personal");
 Console.ForegroundColor = ConsoleColor.Green;
-Console.WriteLine("Add categories success!");
+Console.WriteLine($"{Emoji.Done} Add categories success!");
 Console.ResetColor();
 foreach (var category in task.GetAllCategories())
 {
@@ -48,7 +49,7 @@ task.Add("TASK 1", 1);
 task.Add("TASK 2", 2);
 task.Add("TASK 3", 2);
 Console.ForegroundColor = ConsoleColor.Green;
-Console.WriteLine("Add task success!");
+Console.WriteLine($"{Emoji.Done} Add task success!");
 Console.ResetColor();
 
 
@@ -57,7 +58,7 @@ PrintAllTasks();
 Console.WriteLine("\n======== Mark Done =========");
 task.MarkDone(1);
 Console.ForegroundColor = ConsoleColor.Green;
-Console.WriteLine("Mark Done success!");
+Console.WriteLine($"{Emoji.Done} Mark Done success!");
 Console.ResetColor();
 
 Console.WriteLine("\n======== GetById  =========");
@@ -86,7 +87,7 @@ void PrintTask(TaskItem taskItem)
 {
     Console.WriteLine($"[{taskItem.Id}] {taskItem.Title} " +
                       $"Status:{taskItem.IsDone} " +
-                      $"Category: {taskItem.Category?.Name ?? "No Category"} ({taskItem.CreatedAt})");
+                      $"Category: {taskItem.Category?.Name?? $"{Emoji.Failed}No category"} ({taskItem.CreatedAt})");
 }
 
 void PrintAllTasks()
@@ -95,7 +96,7 @@ void PrintAllTasks()
     if (!tasks.Any())
     {
         Console.ForegroundColor = ConsoleColor.Red;
-        Console.WriteLine("No tasks found!");
+        Console.WriteLine($"{Emoji.Warning} No tasks found!");
         Console.ResetColor();
         return;
     }
