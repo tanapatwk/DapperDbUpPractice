@@ -30,10 +30,23 @@ else
 
 var task = new TaskRepository(connectionString);
 
+Console.WriteLine("\n======== Add Categories =========");
+task.AddCategory("Work");
+task.AddCategory("Study");
+task.AddCategory("Personal");
+Console.ForegroundColor = ConsoleColor.Green;
+Console.WriteLine("Add categories success!");
+Console.ResetColor();
+foreach (var category in task.GetAllCategories())
+{
+    Console.WriteLine($"[{category.Id}] {category.Name}");
+}
+
+
 Console.WriteLine("\n======== Add task =========");
-task.Add("TASK 1");
-task.Add("TASK 2");
-task.Add("TASK 3");
+task.Add("TASK 1", 1);
+task.Add("TASK 2", 2);
+task.Add("TASK 3", 2);
 Console.ForegroundColor = ConsoleColor.Green;
 Console.WriteLine("Add task success!");
 Console.ResetColor();
@@ -56,20 +69,29 @@ Console.WriteLine("\n======== Delete Task =========");
 task.Delete(1);
 PrintAllTasks();
 
+
+
+Console.WriteLine("\n======== Get All with Category Task =========");
+var taskWithCategory = task.GetAllWithCategory();
+foreach (var taskItem in taskWithCategory)
+{
+    PrintTask(taskItem);
+}
+
 Console.WriteLine("\n======== Clear All Task =========");
 task.ClearAll();
 PrintAllTasks();
 
-
 void PrintTask(TaskItem taskItem)
 {
     Console.WriteLine($"[{taskItem.Id}] {taskItem.Title} " +
-                      $"Status:{taskItem.IsDone} ({taskItem.CreatedAt})");
+                      $"Status:{taskItem.IsDone} " +
+                      $"Category: {taskItem.Category?.Name ?? "No Category"} ({taskItem.CreatedAt})");
 }
 
 void PrintAllTasks()
 {
-    var tasks = task.GetAll();
+    var tasks = task.GetAllWithCategory();
     if (!tasks.Any())
     {
         Console.ForegroundColor = ConsoleColor.Red;

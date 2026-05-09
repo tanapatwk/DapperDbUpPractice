@@ -1,0 +1,6 @@
+CREATE TABLE Categories (
+    Id      INTEGER PRIMARY KEY AUTOINCREMENT,
+    Name    TEXT NOT NULL
+);
+
+ALTER TABLE Tasks ADD COLUMN CategoryId INTEGER REFERENCES Categories(Id);
