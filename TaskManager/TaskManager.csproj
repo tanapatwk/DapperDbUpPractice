@@ -16,9 +16,5 @@
     <ItemGroup>
         <EmbeddedResource Include="Scripts/**/*.sql" />
     </ItemGroup>
-    
-    <ItemGroup>
-      <Folder Include="Helper\" />
-    </ItemGroup>
 
 </Project>
