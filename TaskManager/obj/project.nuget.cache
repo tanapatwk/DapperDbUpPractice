@@ -1,0 +1,20 @@
+{
+  "version": 2,
+  "dgSpecHash": "qsxKpY64xfY=",
+  "success": true,
+  "projectFilePath": "/Users/jor/RiderProjects/DapperDbUpPractice/TaskManager/TaskManager.csproj",
+  "expectedPackageFiles": [
+    "/Users/jor/.nuget/packages/dapper/2.1.72/dapper.2.1.72.nupkg.sha512",
+    "/Users/jor/.nuget/packages/dbup-core/6.0.15/dbup-core.6.0.15.nupkg.sha512",
+    "/Users/jor/.nuget/packages/dbup-sqlite/6.0.4/dbup-sqlite.6.0.4.nupkg.sha512",
+    "/Users/jor/.nuget/packages/microsoft.data.sqlite/10.0.7/microsoft.data.sqlite.10.0.7.nupkg.sha512",
+    "/Users/jor/.nuget/packages/microsoft.data.sqlite.core/10.0.7/microsoft.data.sqlite.core.10.0.7.nupkg.sha512",
+    "/Users/jor/.nuget/packages/microsoft.extensions.dependencyinjection.abstractions/8.0.0/microsoft.extensions.dependencyinjection.abstractions.8.0.0.nupkg.sha512",
+    "/Users/jor/.nuget/packages/microsoft.extensions.logging.abstractions/8.0.0/microsoft.extensions.logging.abstractions.8.0.0.nupkg.sha512",
+    "/Users/jor/.nuget/packages/sqlitepclraw.bundle_e_sqlite3/2.1.11/sqlitepclraw.bundle_e_sqlite3.2.1.11.nupkg.sha512",
+    "/Users/jor/.nuget/packages/sqlitepclraw.core/2.1.11/sqlitepclraw.core.2.1.11.nupkg.sha512",
+    "/Users/jor/.nuget/packages/sqlitepclraw.lib.e_sqlite3/2.1.11/sqlitepclraw.lib.e_sqlite3.2.1.11.nupkg.sha512",
+    "/Users/jor/.nuget/packages/sqlitepclraw.provider.e_sqlite3/2.1.11/sqlitepclraw.provider.e_sqlite3.2.1.11.nupkg.sha512"
+  ],
+  "logs": []
+}
