@@ -48,9 +48,8 @@ public class CategoryRepository(string connectionString) : ICategoryRepository
             
             await tx.CommitAsync();
         }
-        catch (Exception e)
+        catch (Exception)
         {
-            Console.WriteLine(e);
             await tx.RollbackAsync();
             throw;
         }

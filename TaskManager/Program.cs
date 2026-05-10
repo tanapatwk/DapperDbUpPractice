@@ -1,5 +1,6 @@
 ﻿using System.Reflection;
 using DbUp;
+using Microsoft.Extensions.DependencyInjection;
 using TaskManager.Exceptions;
 using TaskManager.Helpers;
 using TaskManager.Models;
@@ -30,8 +31,16 @@ else
     Console.ResetColor();
 }
 
-ITaskRepository task = new TaskRepository(connectionString);
-ICategoryRepository categoryRepo = new CategoryRepository(connectionString);
+var services = new ServiceCollection();
+
+services.AddSingleton<ITaskRepository>(_ => new TaskRepository(connectionString));
+services.AddSingleton<ICategoryRepository>(_ => new CategoryRepository(connectionString));
+
+var provider = services.BuildServiceProvider();
+
+
+var task = provider.GetRequiredService<ITaskRepository>();
+var categoryRepo = provider.GetRequiredService<ICategoryRepository>();
 
 Console.WriteLine("\n======== Add Categories =========");
 categoryRepo.AddCategory("Work");
@@ -97,8 +106,12 @@ catch (Exception e)
 Console.WriteLine("\n==== Transaction: Rollback Case =====");
 try
 {
-    await categoryRepo.CreateCategoryWithTaskAsync("Study", ["Task C", null!,"Task D"]);
+    await categoryRepo.CreateCategoryWithTaskAsync("Study", ["Task C", null!, "Task D"]);
     Console.WriteLine($"{Emoji.Success} Success Case!");
+}
+catch (TaskValidationException tex)
+{
+    Console.WriteLine($"{Emoji.Failed} An update db error: {tex.Message}");
 }
 catch (Exception e)
 {
@@ -115,7 +128,7 @@ void PrintTask(TaskItem taskItem)
 {
     Console.WriteLine($"[{taskItem.Id}] {taskItem.Title} " +
                       $"Status:{taskItem.IsDone} " +
-                      $"Category: {taskItem.Category?.Name?? $"{Emoji.Failed}No category"} ({taskItem.CreatedAt})");
+                      $"Category: {taskItem.Category?.Name?? $"{Emoji.Failed} No category"} ({taskItem.CreatedAt})");
 }
 
 void PrintAllTasks()
