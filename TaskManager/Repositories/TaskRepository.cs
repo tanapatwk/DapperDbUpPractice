@@ -4,7 +4,7 @@ using TaskManager.Models;
 
 namespace TaskManager.Repositories;
 
-public class TaskRepository(string connectionString)
+public class TaskRepository(string connectionString) :ITaskRepository
 {
     private readonly string _connectionString = connectionString;
 
@@ -21,12 +21,6 @@ public class TaskRepository(string connectionString)
                 CategoryId = categoryId
             }
         );
-    }
-
-    public IEnumerable<TaskItem> GetAll()
-    {
-        using var conn = new SqliteConnection(_connectionString);
-        return conn.Query<TaskItem>("SELECT * FROM Tasks").ToList();
     }
 
     public TaskItem? GetById(int id)
@@ -71,14 +65,6 @@ public class TaskRepository(string connectionString)
         conn.Execute("DELETE FROM sqlite_sequence WHERE name = 'Categories'");
     }
     
-    public void AddCategory(string categoryName)
-    {
-        using var conn = new SqliteConnection(_connectionString);
-        conn.Execute(
-            "INSERT INTO Categories (Name) VALUES (@Name);",new { Name = categoryName }
-        );
-    }
-    
     public IEnumerable<TaskItem> GetAllWithCategory()
     {
         using var conn = new SqliteConnection(_connectionString);
@@ -95,10 +81,5 @@ public class TaskRepository(string connectionString)
         ).ToList();
     }
 
-    public IEnumerable<Category> GetAllCategories()
-    {
-        using var conn = new SqliteConnection(_connectionString);
-        return conn.Query<Category>("SELECT * FROM Categories").ToList();
-    }
-    
+
 }

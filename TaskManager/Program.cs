@@ -1,5 +1,6 @@
 ﻿using System.Reflection;
 using DbUp;
+using TaskManager.Exceptions;
 using TaskManager.Helpers;
 using TaskManager.Models;
 using TaskManager.Repositories;
@@ -29,20 +30,16 @@ else
     Console.ResetColor();
 }
 
-var task = new TaskRepository(connectionString);
+ITaskRepository task = new TaskRepository(connectionString);
+ICategoryRepository categoryRepo = new CategoryRepository(connectionString);
 
 Console.WriteLine("\n======== Add Categories =========");
-task.AddCategory("Work");
-task.AddCategory("Study");
-task.AddCategory("Personal");
+categoryRepo.AddCategory("Work");
+categoryRepo.AddCategory("Study");
+categoryRepo.AddCategory("Personal");
 Console.ForegroundColor = ConsoleColor.Green;
 Console.WriteLine($"{Emoji.Done} Add categories success!");
 Console.ResetColor();
-foreach (var category in task.GetAllCategories())
-{
-    Console.WriteLine($"[{category.Id}] {category.Name}");
-}
-
 
 Console.WriteLine("\n======== Add task =========");
 task.Add("TASK 1", 1);
@@ -80,13 +77,15 @@ foreach (var taskItem in taskWithCategory)
 }
 
 // ------------ Test Category Repository ---------------
-var categoryRepo = new CategoryRepository(connectionString);
-
 Console.WriteLine("\n==== Transaction: Success Case =====");
 try
 {
-    await categoryRepo.CreateCategoryWithTaskAsync("WORK", ["Task A","Task B"]);
+    await categoryRepo.CreateCategoryWithTaskAsync("WORK", ["Task A", "Task B"]);
     Console.WriteLine($"{Emoji.Success} Success Case!");
+}
+catch (TaskValidationException tex)
+{
+    Console.WriteLine($"{Emoji.Failed} An error occured: {tex.Message}");
 }
 catch (Exception e)
 {
