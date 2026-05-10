@@ -79,9 +79,38 @@ foreach (var taskItem in taskWithCategory)
     PrintTask(taskItem);
 }
 
-Console.WriteLine("\n======== Clear All Task =========");
-task.ClearAll();
+// ------------ Test Category Repository ---------------
+var categoryRepo = new CategoryRepository(connectionString);
+
+Console.WriteLine("\n==== Transaction: Success Case =====");
+try
+{
+    await categoryRepo.CreateCategoryWithTaskAsync("WORK", ["Task A","Task B"]);
+    Console.WriteLine($"{Emoji.Success} Success Case!");
+}
+catch (Exception e)
+{
+    Console.WriteLine($"{Emoji.Failed} An error occured: {e.Message}");
+}
+
+// ------------ Test Category Repository ---------------
+
+Console.WriteLine("\n==== Transaction: Rollback Case =====");
+try
+{
+    await categoryRepo.CreateCategoryWithTaskAsync("Study", ["Task C", null!,"Task D"]);
+    Console.WriteLine($"{Emoji.Success} Success Case!");
+}
+catch (Exception e)
+{
+    Console.WriteLine($"{Emoji.Failed} An error occured: {e.Message}");
+}
+
+Console.WriteLine("====== Task List =========");
 PrintAllTasks();
+
+task.ClearAll();
+
 
 void PrintTask(TaskItem taskItem)
 {
