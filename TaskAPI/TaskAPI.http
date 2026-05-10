@@ -1,0 +1,34 @@
+@host = http://localhost:5016
+
+### 1. เพิ่ม Categories
+POST {{host}}/categories
+Content-Type: application/json
+
+{ "name": "Work" }
+
+###
+POST {{host}}/categories
+Content-Type: application/json
+
+{ "name": "Study" }
+
+### 2. เพิ่ม Tasks
+POST {{host}}/tasks
+Content-Type: application/json
+
+{ "title": "Learn Minimal API", "categoryId": 1 }
+
+###
+POST {{host}}/tasks
+Content-Type: application/json
+
+{ "title": "Read a book", "categoryId": 2 }
+
+### 3. ดู Tasks ทั้งหมด
+GET {{host}}/tasks
+
+### 4. Mark Done
+PUT {{host}}/tasks/1/done
+
+### 5. Delete
+DELETE {{host}}/tasks/2
