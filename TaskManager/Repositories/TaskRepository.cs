@@ -4,29 +4,13 @@ using TaskManager.Models;
 
 namespace TaskManager.Repositories;
 
-public class TaskRepository :ITaskRepository
+public class TaskRepository(string connectionString) :ITaskRepository
 {
-    private readonly string? _connectionString;
-    private readonly SqliteConnection? _connection;
-
-    public TaskRepository(string connectionString)
-    {
-        _connectionString = connectionString;
-    }
-
-    public TaskRepository(SqliteConnection connection)
-    {
-        _connection = connection;
-    }
-
-    private SqliteConnection GetConnection()
-    {
-        return _connection ?? new SqliteConnection(_connectionString);
-    }
-
+    private readonly string _connectionString = connectionString;
+    
     public void Add(string title, int categoryId)
     {
-        using var conn = GetConnection();
+        using var conn = new SqliteConnection(_connectionString);
         conn.Execute(
             "INSERT INTO Tasks (Title, CreatedAt, CategoryId) " +
             "VALUES (@Title, @CreatedAt, @CategoryId);",
@@ -41,7 +25,7 @@ public class TaskRepository :ITaskRepository
 
     public TaskItem? GetById(int id)
     {
-        using var conn = GetConnection();
+        using var conn = new SqliteConnection(_connectionString);
         return conn.Query<TaskItem, Category, TaskItem>(
             @"SELECT t.*, c.Id, c.Name " +
             "FROM Tasks t " +
@@ -59,21 +43,21 @@ public class TaskRepository :ITaskRepository
     
     public void MarkDone(int id)
     {
-        using var conn = GetConnection();
+        using var conn = new SqliteConnection(_connectionString);
         conn.Execute(
             "UPDATE Tasks SET IsDone = 1 WHERE Id = @Id",new { Id = id });
     }
 
     public void Delete(int id)
     {
-        using var conn = GetConnection();
+        using var conn = new SqliteConnection(_connectionString);
         conn.Execute(
             "DELETE FROM Tasks WHERE Id = @Id", new { Id = id });
     }
     
     public void ClearAll()
     {
-        using var conn = GetConnection();
+        using var conn = new SqliteConnection(_connectionString);
         conn.Execute("DELETE FROM Tasks");
         conn.Execute("DELETE FROM sqlite_sequence WHERE name = 'Tasks'");
         
@@ -83,7 +67,7 @@ public class TaskRepository :ITaskRepository
     
     public IEnumerable<TaskItem> GetAllWithCategory()
     {
-        using var conn = GetConnection();
+        using var conn = new SqliteConnection(_connectionString);
         return conn.Query<TaskItem, Category, TaskItem>(
             @"SELECT t.*, c.Id, c.Name
                 FROM Tasks t

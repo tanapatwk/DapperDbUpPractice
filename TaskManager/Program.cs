@@ -1,10 +1,18 @@
 ﻿using System.Reflection;
 using DbUp;
 using Microsoft.Extensions.DependencyInjection;
+using Serilog;
 using TaskManager.Exceptions;
 using TaskManager.Helpers;
 using TaskManager.Models;
 using TaskManager.Repositories;
+
+
+Log.Logger = new LoggerConfiguration()
+    .MinimumLevel.Debug()
+    .WriteTo.Console()
+    .WriteTo.File("logs/taskmanager.log", rollingInterval: RollingInterval.Day)
+    .CreateLogger();
 
 var dbPath = "taskmanager.db";
 var connectionString = $"Data Source={dbPath}";
@@ -19,16 +27,12 @@ var upgrader = DeployChanges.To
 var result = upgrader.PerformUpgrade();
 if (!result.Successful)
 {
-    Console.ForegroundColor = ConsoleColor.Red;
-    Console.WriteLine($"{Emoji.Failed} Migration ล้มเหลว {result.Error}");
-    Console.ResetColor();
+    Log.Error("{Failed} Migration ล้มเหลว {Error}", Emoji.Failed, result.Error);
     return;
 }
 else
 {
-    Console.ForegroundColor = ConsoleColor.Green;
-    Console.WriteLine($"{Emoji.Success} Success!");
-    Console.ResetColor();
+    Log.Information("{Success} Migration สำเร็จ", Emoji.Success);
 }
 
 var services = new ServiceCollection();
@@ -46,26 +50,20 @@ Console.WriteLine("\n======== Add Categories =========");
 categoryRepo.AddCategory("Work");
 categoryRepo.AddCategory("Study");
 categoryRepo.AddCategory("Personal");
-Console.ForegroundColor = ConsoleColor.Green;
-Console.WriteLine($"{Emoji.Done} Add categories success!");
-Console.ResetColor();
+Log.Information("{Success} Add Categories success!", Emoji.Success);
 
 Console.WriteLine("\n======== Add task =========");
 task.Add("TASK 1", 1);
 task.Add("TASK 2", 2);
 task.Add("TASK 3", 2);
-Console.ForegroundColor = ConsoleColor.Green;
-Console.WriteLine($"{Emoji.Done} Add task success!");
-Console.ResetColor();
+Log.Information("{Success} Add task success!", Emoji.Success);
 
 
 PrintAllTasks();
 
 Console.WriteLine("\n======== Mark Done =========");
 task.MarkDone(1);
-Console.ForegroundColor = ConsoleColor.Green;
-Console.WriteLine($"{Emoji.Done} Mark Done success!");
-Console.ResetColor();
+Log.Information("{Success} Mark Done!", Emoji.Success);
 
 Console.WriteLine("\n======== GetById  =========");
 var taskDone = task.GetById(1);
@@ -94,11 +92,11 @@ try
 }
 catch (TaskValidationException tex)
 {
-    Console.WriteLine($"{Emoji.Failed} An error occured: {tex.Message}");
+    Log.Error("{Failed} An error occured: {Error}", Emoji.Failed, tex.Message);
 }
 catch (Exception e)
 {
-    Console.WriteLine($"{Emoji.Failed} An error occured: {e.Message}");
+    Log.Error("{Failed} An error occured: {Error}", Emoji.Failed, e);
 }
 
 // ------------ Test Category Repository ---------------
@@ -107,15 +105,15 @@ Console.WriteLine("\n==== Transaction: Rollback Case =====");
 try
 {
     await categoryRepo.CreateCategoryWithTaskAsync("Study", ["Task C", null!, "Task D"]);
-    Console.WriteLine($"{Emoji.Success} Success Case!");
+    Log.Information("{Success} Success Case!", Emoji.Success);
 }
 catch (TaskValidationException tex)
 {
-    Console.WriteLine($"{Emoji.Failed} An update db error: {tex.Message}");
+    Log.Error("{Failed} An update db error: {Error}", Emoji.Failed, tex.Message);
 }
 catch (Exception e)
 {
-    Console.WriteLine($"{Emoji.Failed} An error occured: {e.Message}");
+    Log.Error("{Failed} An error occured: {Error}", Emoji.Failed, e);
 }
 
 Console.WriteLine("====== Task List =========");
