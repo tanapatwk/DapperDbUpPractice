@@ -32,3 +32,42 @@ PUT {{host}}/tasks/1/done
 
 ### 5. Delete
 DELETE {{host}}/tasks/2
+
+### ลบ Id ที่ไม่มี
+DELETE {{host}}/tasks/999
+
+### Mark Done Id ที่ไม่มี
+PUT {{host}}/tasks/999/done
+
+### title ว่าง
+POST {{host}}/tasks
+Content-Type: application/json
+
+{ "title": "", "categoryId": 1 }
+
+### categoryId ไม่ถูกต้อง
+POST {{host}}/tasks
+Content-Type: application/json
+
+{ "title": "Test", "categoryId": 0 }
+
+### POST task with empty title
+POST {{host}}/tasks
+Content-Type: application/json
+
+{ "title": "", "categoryId": 1 }
+
+### Mark Done Id ที่ไม่มี
+PUT {{host}}/tasks/999/done
+
+### Delete Id ที่ไม่มี
+DELETE {{host}}/tasks/999
+
+### 400 - Id ไม่ถูกต้อง
+PUT {{host}}/tasks/0/done
+
+### 404 - Id ไม่มีในระบบ
+PUT {{host}}/tasks/999/done
+
+### 204 - สำเร็จ
+PUT {{host}}/tasks/1/done

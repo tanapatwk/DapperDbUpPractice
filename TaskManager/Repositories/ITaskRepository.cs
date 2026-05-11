@@ -4,10 +4,10 @@ namespace TaskManager.Repositories;
 
 public interface ITaskRepository
 {
-     void Add(string title, int categoryId);
-     TaskItem? GetById(int id);
-     void MarkDone(int id);
-     void Delete(int id);
-     void ClearAll();
-     IEnumerable<TaskItem> GetAllWithCategory();
+     Task AddAsync(string title, int categoryId);
+     Task<TaskItem?> GetByIdAsync(int id);
+     Task MarkDoneAsync(int id);
+     Task DeleteAsync(int id);
+     Task ClearAllAsync();
+     Task<IEnumerable<TaskItem>> GetAllWithCategoryAsync();
 }

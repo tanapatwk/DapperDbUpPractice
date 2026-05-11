@@ -40,59 +40,66 @@ public class TaskRepositoryTest : IDisposable
     }
 
     [Fact]
-    public void GetAllWithCategory_ReturnsTaskWithCategory()
+    public async Task GetAllWithCategory_ReturnsTaskWithCategory()
     {
         _keepAlive.Execute("INSERT INTO Categories(Name) VALUES ('Sleep')");
         _keepAlive.Execute(@"INSERT INTO Tasks(Title, CreatedAt, CategoryId)
                         VALUES ('Test Task', '2026-01-01', 1)");
 
         var repo = new TaskRepository(ConnStr);
-        var result = repo.GetAllWithCategory().ToList();
+        var result = await repo.GetAllWithCategoryAsync();
+        
+        var resultList = result.ToList();
 
-        Assert.Single(result);
-        Assert.Equal("Test Task", result[0].Title);
-        Assert.Equal("Sleep", result[0].Category?.Name);
+        Assert.Single(resultList);
+        Assert.Equal("Test Task", resultList[0].Title);
+        Assert.Equal("Sleep", resultList[0].Category?.Name);
     }
 
     [Fact]
-    public void Add_ValidTask_ShouldBeRetrievable()
+    public async Task Add_ValidTask_ShouldBeRetrievable()
     {
-        _keepAlive.Execute("INSERT INTO Categories(Name) VALUES ('Work')");
+        await _keepAlive.ExecuteAsync("INSERT INTO Categories(Name) VALUES ('Work')");
         var repo = new TaskRepository(ConnStr);
-        repo.Add("Task A", 1);
-        var result = repo.GetAllWithCategory().ToList();
+        await repo.AddAsync("Task A", 1);
+        var result = await repo.GetAllWithCategoryAsync();
+        
+        var resultList = result.ToList();
 
-        Assert.Single(result);
-        Assert.Equal("Task A", result[0].Title);
-        Assert.Equal("Work", result[0].Category?.Name);
+        Assert.Single(resultList);
+        Assert.Equal("Task A", resultList[0].Title);
+        Assert.Equal("Work", resultList[0].Category?.Name);
     }
 
     [Fact]
-    public void MarkTaskAsDone_ValidTask_ShouldBeMarkedAsDone()
+    public async Task MarkTaskAsDone_ValidTask_ShouldBeMarkedAsDone()
     {
-        _keepAlive.Execute("INSERT INTO Categories(Name) VALUES ('Testing')");
-        _keepAlive.Execute(@"INSERT INTO Tasks(Title, CreatedAt, CategoryId)
+        await _keepAlive.ExecuteAsync("INSERT INTO Categories(Name) VALUES ('Testing')");
+        await _keepAlive.ExecuteAsync(@"INSERT INTO Tasks(Title, CreatedAt, CategoryId)
                                  VALUES ('Test Task', '2026-01-01', 1)");
         var repo = new TaskRepository(ConnStr);
-        var before = repo.GetAllWithCategory().ToList();
-        repo.MarkDone(before[0].Id);
-        var result = repo.GetAllWithCategory().ToList();
+        var before = await repo.GetAllWithCategoryAsync();
+        var beforeList = before.ToList();
+        await repo.MarkDoneAsync(beforeList[0].Id);
+        var result = await repo.GetAllWithCategoryAsync();
+        var resultList = result.ToList();
         
-        Assert.Single(result);
-        Assert.True(result[0].IsDone);
+        Assert.Single(resultList);
+        Assert.True(resultList[0].IsDone);
     }
 
     [Fact]
-    public void Delete_ValidTask_ShouldBeDeleted()
+    public async Task Delete_ValidTask_ShouldBeDeleted()
     {
-        _keepAlive.Execute("INSERT INTO Categories(Name) VALUES ('Testing')");
-        _keepAlive.Execute(@"INSERT INTO Tasks(Title, CreatedAt, CategoryId)
+        await _keepAlive.ExecuteAsync("INSERT INTO Categories(Name) VALUES ('Testing')");
+        await _keepAlive.ExecuteAsync(@"INSERT INTO Tasks(Title, CreatedAt, CategoryId)
                                 VALUES ('Test Task', '2026-01-01', 1)");
         var repo = new TaskRepository(ConnStr);
-        var before = repo.GetAllWithCategory().ToList();
-        repo.Delete(before[0].Id);
-        var result = repo.GetAllWithCategory().ToList();
+        var before = await repo.GetAllWithCategoryAsync();
+        var beforeList = before.ToList();
+        await repo.DeleteAsync(beforeList[0].Id);
+        var result = await repo.GetAllWithCategoryAsync();
         
-        Assert.Empty(result);
+        Assert.Empty(result.ToList());
     }
 }

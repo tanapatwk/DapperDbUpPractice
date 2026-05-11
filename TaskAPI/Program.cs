@@ -1,35 +1,83 @@
+using Microsoft.AspNetCore.Diagnostics;
+using TaskAPI.DTO;
+using TaskManager.Exceptions;
 using TaskManager.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
-var connectionString = "Data Source=../TaskManager/bin/Debug/net10.0/taskmanager.db";
+var connectionString = builder.Configuration.GetConnectionString("Default")
+    ?? throw new InvalidOperationException("Connection string 'Default' not found");
 
 builder.Services.AddSingleton<ITaskRepository>(_ => new TaskRepository(connectionString));
 builder.Services.AddSingleton<ICategoryRepository>(_ => new CategoryRepository(connectionString));
 
 var app = builder.Build();
 
-app.MapGet("/tasks", (ITaskRepository repo) =>
+app.UseExceptionHandler(errApp =>
 {
-    var task = repo.GetAllWithCategory();
-    return Results.Ok(task);
+    errApp.Run(async context =>
+    {
+        var exceptionFeature = context.Features.Get<IExceptionHandlerFeature>();
+        var exception = exceptionFeature?.Error;
+
+        if (exception is TaskValidationException exValidation)
+        {
+            context.Response.StatusCode = StatusCodes.Status400BadRequest;
+            context.Response.ContentType = "application/json";
+            await context.Response.WriteAsJsonAsync(new
+            {
+                error = exValidation.Message
+            });
+        }
+        else if (exception is TaskNotFoundException exNotFound)
+        {
+            context.Response.StatusCode = StatusCodes.Status404NotFound;
+            context.Response.ContentType = "application/json";
+            await context.Response.WriteAsJsonAsync(new
+            {
+                error = exNotFound.Message
+            });
+        }
+        else
+        {
+            context.Response.StatusCode = 500;
+            context.Response.ContentType = "application/json";
+            await context.Response.WriteAsJsonAsync(new
+            {
+                error = "Internal Server Error occurred. Please try again later."
+            });
+        }
+    });
 });
 
-app.MapPost("/tasks", (ITaskRepository repo, CreateTaskRequest request) =>
+app.MapGet("/tasks", async (ITaskRepository repo) =>
 {
-    repo.Add(request.Title, request.CategoryId);
+    var tasks = (await repo.GetAllWithCategoryAsync())
+        .Select(t => new TaskResponse(
+            t.Id,
+            t.Title,
+            t.IsDone,
+            t.CreatedAt ?? "",
+            t.Category?.Name
+        ));
+    return Results.Ok(tasks);
+});
+
+app.MapPost("/tasks", async (ITaskRepository repo, CreateTaskRequest request) =>
+{
+    await repo.AddAsync(request.Title, request.CategoryId);
     return Results.Created("/tasks", null);
 });
 
-app.MapPut("/tasks/{id}/done", (ITaskRepository repo, int id) =>
+app.MapPut("/tasks/{id}/done", async (ITaskRepository repo, int id) =>
 {
-    repo.MarkDone(id);
+    await repo.MarkDoneAsync(id);
     return Results.NoContent();
 });
 
-app.MapDelete("/tasks/{id}", (ITaskRepository repo, int id) =>
+app.MapDelete("/tasks/{id}", async (ITaskRepository repo, int id) =>
 {
-    repo.Delete(id);
+    await repo.DeleteAsync(id);
     return Results.NoContent();
 });
 

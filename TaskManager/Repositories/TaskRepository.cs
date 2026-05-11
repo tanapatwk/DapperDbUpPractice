@@ -1,17 +1,24 @@
 using Dapper;
 using Microsoft.Data.Sqlite;
+using TaskManager.Exceptions;
 using TaskManager.Models;
 
 namespace TaskManager.Repositories;
 
-public class TaskRepository(string connectionString) :ITaskRepository
+public class TaskRepository(string connectionString) : ITaskRepository
 {
     private readonly string _connectionString = connectionString;
     
-    public void Add(string title, int categoryId)
+    public async Task AddAsync(string title, int categoryId)
     {
-        using var conn = new SqliteConnection(_connectionString);
-        conn.Execute(
+        if(string.IsNullOrWhiteSpace(title))
+            throw new TaskValidationException("Title is required");
+        
+        if(categoryId <= 0)
+            throw new TaskValidationException("CategoryId is required");
+        
+        await using var conn = new SqliteConnection(_connectionString);
+        await conn.ExecuteAsync(
             "INSERT INTO Tasks (Title, CreatedAt, CategoryId) " +
             "VALUES (@Title, @CreatedAt, @CategoryId);",
             new
@@ -23,10 +30,13 @@ public class TaskRepository(string connectionString) :ITaskRepository
         );
     }
 
-    public TaskItem? GetById(int id)
+    public async Task<TaskItem?> GetByIdAsync(int id)
     {
-        using var conn = new SqliteConnection(_connectionString);
-        return conn.Query<TaskItem, Category, TaskItem>(
+        if(id <= 0)
+            throw new TaskValidationException("Id is required");
+        
+        await using var conn = new SqliteConnection(_connectionString);
+        var result = await conn.QueryAsync<TaskItem, Category, TaskItem>(
             @"SELECT t.*, c.Id, c.Name " +
             "FROM Tasks t " +
             "LEFT JOIN Categories c ON t.CategoryId = c.Id " +
@@ -38,37 +48,51 @@ public class TaskRepository(string connectionString) :ITaskRepository
             },
             param: new { Id = id },
             splitOn: "Id"
-        ).FirstOrDefault();
+        );
+        return result.FirstOrDefault();
     }
     
-    public void MarkDone(int id)
+    public async Task MarkDoneAsync(int id)
     {
-        using var conn = new SqliteConnection(_connectionString);
-        conn.Execute(
+        if(id <= 0)
+            throw new TaskValidationException("Id is required");
+        
+        var task = await GetByIdAsync(id);
+        if(task == null)
+            throw new TaskNotFoundException("Task not found");
+        
+        await using var conn = new SqliteConnection(_connectionString);
+        await conn.ExecuteAsync(
             "UPDATE Tasks SET IsDone = 1 WHERE Id = @Id",new { Id = id });
     }
 
-    public void Delete(int id)
+    public async Task DeleteAsync(int id)
     {
-        using var conn = new SqliteConnection(_connectionString);
-        conn.Execute(
-            "DELETE FROM Tasks WHERE Id = @Id", new { Id = id });
-    }
-    
-    public void ClearAll()
-    {
-        using var conn = new SqliteConnection(_connectionString);
-        conn.Execute("DELETE FROM Tasks");
-        conn.Execute("DELETE FROM sqlite_sequence WHERE name = 'Tasks'");
+        if(id <= 0)
+            throw new TaskValidationException("Id is required");
         
-        conn.Execute("DELETE FROM Categories");
-        conn.Execute("DELETE FROM sqlite_sequence WHERE name = 'Categories'");
+        var task = await GetByIdAsync(id);
+        if(task == null)
+            throw new TaskNotFoundException("Task not found");
+        
+        await using var conn = new SqliteConnection(_connectionString);
+        await conn.ExecuteAsync("DELETE FROM Tasks WHERE Id = @Id", new { Id = id });
+    }
+
+    public async Task ClearAllAsync()
+    {
+        await using var conn = new SqliteConnection(_connectionString);
+        await conn.ExecuteAsync("DELETE FROM Tasks");
+        await conn.ExecuteAsync("DELETE FROM sqlite_sequence WHERE name = 'Tasks'");
+        
+        await conn.ExecuteAsync("DELETE FROM Categories");
+        await conn.ExecuteAsync("DELETE FROM sqlite_sequence WHERE name = 'Categories'");
     }
     
-    public IEnumerable<TaskItem> GetAllWithCategory()
+    public async Task<IEnumerable<TaskItem>> GetAllWithCategoryAsync()
     {
-        using var conn = new SqliteConnection(_connectionString);
-        return conn.Query<TaskItem, Category, TaskItem>(
+        await using var conn = new SqliteConnection(_connectionString);
+        var result = await  conn.QueryAsync<TaskItem, Category, TaskItem>(
             @"SELECT t.*, c.Id, c.Name
                 FROM Tasks t
                 LEFT JOIN categories c ON c.Id = t.CategoryId",
@@ -78,6 +102,7 @@ public class TaskRepository(string connectionString) :ITaskRepository
                 return task;
             },
             splitOn: "Id"
-        ).ToList();
+        );
+        return result.ToList();
     }
 }

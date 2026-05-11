@@ -53,31 +53,31 @@ categoryRepo.AddCategory("Personal");
 Log.Information("{Success} Add Categories success!", Emoji.Success);
 
 Console.WriteLine("\n======== Add task =========");
-task.Add("TASK 1", 1);
-task.Add("TASK 2", 2);
-task.Add("TASK 3", 2);
+await task.AddAsync("TASK 1", 1);
+await task.AddAsync("TASK 2", 2);
+await task.AddAsync("TASK 3", 2);
 Log.Information("{Success} Add task success!", Emoji.Success);
 
 
 PrintAllTasks();
 
 Console.WriteLine("\n======== Mark Done =========");
-task.MarkDone(1);
+await task.MarkDoneAsync(1);
 Log.Information("{Success} Mark Done!", Emoji.Success);
 
 Console.WriteLine("\n======== GetById  =========");
-var taskDone = task.GetById(1);
+var taskDone = await task.GetByIdAsync(1);
 if (taskDone != null)
     PrintTask(taskDone);
 
 Console.WriteLine("\n======== Delete Task =========");
-task.Delete(1);
+await task.DeleteAsync(1);
 PrintAllTasks();
 
 
 
 Console.WriteLine("\n======== Get All with Category Task =========");
-var taskWithCategory = task.GetAllWithCategory();
+var taskWithCategory = await task.GetAllWithCategoryAsync();
 foreach (var taskItem in taskWithCategory)
 {
     PrintTask(taskItem);
@@ -117,9 +117,9 @@ catch (Exception e)
 }
 
 Console.WriteLine("====== Task List =========");
-PrintAllTasks();
+await PrintAllTasks();
 
-task.ClearAll();
+await task.ClearAllAsync();
 
 
 void PrintTask(TaskItem taskItem)
@@ -129,9 +129,9 @@ void PrintTask(TaskItem taskItem)
                       $"Category: {taskItem.Category?.Name?? $"{Emoji.Failed} No category"} ({taskItem.CreatedAt})");
 }
 
-void PrintAllTasks()
+async Task PrintAllTasks()
 {
-    var tasks = task.GetAllWithCategory();
+    var tasks = await task.GetAllWithCategoryAsync();
     if (!tasks.Any())
     {
         Console.ForegroundColor = ConsoleColor.Red;
